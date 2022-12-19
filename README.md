@@ -18,7 +18,7 @@ https://github.com/LAION-AI/dalle2-laion
 
 ## Example Commands        
 ----------------------------------------------------------------------------
-### For Inference: \
+### For Inference: 
 cd dalle2-laion \
 python dream_gradio_inference.py \
 python variation_gradio_inference.py \
