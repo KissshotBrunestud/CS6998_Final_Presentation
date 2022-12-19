@@ -1,30 +1,30 @@
 # CS6998_Final_Presentation
 
-## project description
+## Project Description
 ----------------------------------------------------------------------------
-This project implement the DALL-E 2 pytorch model locally based on:
-https://github.com/lucidrains/DALLE2-pytorch
+This project implement the DALL-E 2 pytorch model locally based on:\
+https://github.com/lucidrains/DALLE2-pytorch \
 https://github.com/LAION-AI/dalle2-laion
 
 ![DALL-E 2,  OpenAI's updated text-to-image synthesis neural network](https://user-images.githubusercontent.com/27121819/208495737-702a0eaf-5af5-46e8-9836-e0a0d91ea5eb.png)
 
 
 
-## repository description
+## Repository Description
 ----------------------------------------------------------------------------
 #### dalle2-laion : this dir contains an implemented inference pipeline and the model pretrained on LAION dataset
 #### web-scraper-south-park-images : this dir download images from internet to form a small dataset we prepared to train on. (Reference : https://github.com/maria-ilie/web-scraper-south-park-images)
 
 
-## Example commands to execute the code         
+## Example Commands        
 ----------------------------------------------------------------------------
-### For Inference:
-cd dalle2-laion
-python dream_gradio_inference.py
-python variation_gradio_inference.py
+### For Inference: \
+cd dalle2-laion \
+python dream_gradio_inference.py \
+python variation_gradio_inference.py \
 python inpaint_gradio_inference.py
 
-## Results (including charts/tables) and your observations  
+## Results And Observations  
 ----------------------------------------------------------------------------
 ![The user interface example](https://user-images.githubusercontent.com/27121819/208494611-330da5b6-328a-467e-b528-e18df404e7db.png)
 
