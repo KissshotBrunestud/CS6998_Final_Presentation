@@ -21,6 +21,7 @@ from accelerate import Accelerator, DistributedDataParallelKwargs, InitProcessGr
 from accelerate.utils import dataclasses as accelerate_dataclasses
 import webdataset as wds
 import click
+import pdb
 
 # constants
 
@@ -62,11 +63,11 @@ def create_dataloaders(
     num_val = len(available_shards) - num_train - num_test
     assert num_train + num_test + num_val == len(available_shards), f"{num_train} + {num_test} + {num_val} = {num_train + num_test + num_val} != {len(available_shards)}"
     train_split, test_split, val_split = torch.utils.data.random_split(available_shards, [num_train, num_test, num_val], generator=torch.Generator().manual_seed(seed))
-
+    #pdb.set_trace()
     # The shard number in the webdataset file names has a fixed width. We zero pad the shard numbers so they correspond to a filename.
-    train_urls = [webdataset_base_url.format(str(shard).zfill(shard_width)) for shard in train_split]
-    test_urls = [webdataset_base_url.format(str(shard).zfill(shard_width)) for shard in test_split]
-    val_urls = [webdataset_base_url.format(str(shard).zfill(shard_width)) for shard in val_split]
+    train_urls = [webdataset_base_url + (str(shard).zfill(shard_width)) + ".tar" for shard in train_split]
+    test_urls = [webdataset_base_url + (str(shard).zfill(shard_width)) + ".tar" for shard in test_split]
+    val_urls = [webdataset_base_url + (str(shard).zfill(shard_width)) + ".tar" for shard in val_split]
     
     create_dataloader = lambda tar_urls, shuffle=False, resample=False, for_sampling=False: create_image_embedding_dataloader(
         tar_url=tar_urls,
@@ -76,24 +77,26 @@ def create_dataloaders(
         text_embeddings_url=text_embeddings_url,
         index_width=index_width,
         shuffle_num = None,
-        extra_keys= ["txt"],
+        #extra_keys= ["txt"],
+        extra_keys= [],
         shuffle_shards = shuffle,
         resample_shards = resample, 
         img_preproc=img_preproc,
         handler=wds.handlers.warn_and_continue
     )
 
+    pdb.set_trace()
     train_dataloader = create_dataloader(train_urls, shuffle=shuffle_train, resample=resample_train)
-    train_sampling_dataloader = create_dataloader(train_urls, shuffle=False, for_sampling=True)
+    #train_sampling_dataloader = create_dataloader(train_urls, shuffle=False, for_sampling=True)
     val_dataloader = create_dataloader(val_urls, shuffle=False)
     test_dataloader = create_dataloader(test_urls, shuffle=False)
-    test_sampling_dataloader = create_dataloader(test_urls, shuffle=False, for_sampling=True)
+    #test_sampling_dataloader = create_dataloader(test_urls, shuffle=False, for_sampling=True)
     return {
         "train": train_dataloader,
-        "train_sampling": train_sampling_dataloader,
+        #"train_sampling": train_sampling_dataloader,
         "val": val_dataloader,
         "test": test_dataloader,
-        "test_sampling": test_sampling_dataloader
+        #"test_sampling": test_sampling_dataloader
     }
 
 def get_dataset_keys(dataloader):
@@ -114,6 +117,7 @@ def get_example_data(dataloader, device, n=5):
     text_embeddings = []
     captions = []
     for img, emb, txt in dataloader:
+        pdb.set_trace()
         img_emb, text_emb = emb.get('img'), emb.get('text')
         if img_emb is not None:
             img_emb = img_emb.to(device=device, dtype=torch.float)
@@ -286,7 +290,7 @@ def train(
     Trains a decoder on a dataset.
     """
     is_master = accelerator.process_index == 0
-
+    #pdb.set_trace()
     if not exists(unet_training_mask):
         # Then the unet mask should be true for all unets in the decoder
         unet_training_mask = [True] * len(decoder.unets)
@@ -330,11 +334,11 @@ def train(
 
     accelerator.print(print_ribbon("Generating Example Data", repeat=40))
     accelerator.print("This can take a while to load the shard lists...")
-    if is_master:
-        train_example_data = get_example_data(dataloaders["train_sampling"], inference_device, n_sample_images)
-        accelerator.print("Generated training examples")
-        test_example_data = get_example_data(dataloaders["test_sampling"], inference_device, n_sample_images)
-        accelerator.print("Generated testing examples")
+    #if is_master:
+    #    train_example_data = get_example_data(dataloaders["train_sampling"], inference_device, n_sample_images)
+    #    accelerator.print("Generated training examples")
+    #    test_example_data = get_example_data(dataloaders["test_sampling"], inference_device, n_sample_images)
+    #    accelerator.print("Generated testing examples")
     
     send_to_device = lambda arr: [x.to(device=inference_device, dtype=torch.float) for x in arr]
 
@@ -348,7 +352,9 @@ def train(
         last_snapshot = sample
 
         if next_task == 'train':
-            for i, (img, emb, txt) in enumerate(dataloaders["train"]):
+            #for i, (img, emb, txt) in enumerate(dataloaders["train"]):\
+            pdb.set_trace()
+            for i, (img, emb) in enumerate(dataloaders["train"]):
                 # We want to count the total number of samples across all processes
                 sample_length_tensor[0] = len(img)
                 all_samples = accelerator.gather(sample_length_tensor)  # TODO: accelerator.reduce is broken when this was written. If it is fixed replace this.
@@ -379,16 +385,16 @@ def train(
                         assert clip is not None
                         img_embed, img_encoding = clip.embed_image(img)
                         forward_params['image_embed'] = img_embed
-                    if condition_on_text_encodings:
-                        if has_text_embedding:
-                            forward_params['text_encodings'] = text_emb
-                        else:
-                            # Then we need to pass the text instead
-                            assert clip is not None
-                            tokenized_texts = tokenize(txt, truncate=True).to(inference_device)
-                            assert tokenized_texts.shape[0] == len(img), f"The number of texts ({tokenized_texts.shape[0]}) should be the same as the number of images ({len(img)})"
-                            text_embed, text_encodings = clip.embed_text(tokenized_texts)
-                            forward_params['text_encodings'] = text_encodings
+                    # if condition_on_text_encodings:
+                    #     if has_text_embedding:
+                    #         forward_params['text_encodings'] = text_emb
+                    #     else:
+                    #         # Then we need to pass the text instead
+                    #         assert clip is not None
+                    #         tokenized_texts = tokenize(txt, truncate=True).to(inference_device)
+                    #         assert tokenized_texts.shape[0] == len(img), f"The number of texts ({tokenized_texts.shape[0]}) should be the same as the number of images ({len(img)})"
+                    #         text_embed, text_encodings = clip.embed_text(tokenized_texts)
+                    #         forward_params['text_encodings'] = text_encodings
                     loss = trainer.forward(img, **forward_params, unet_number=unet, _device=inference_device)
                     trainer.update(unet_number=unet)
                     unet_losses_tensor[i % TRAIN_CALC_LOSS_EVERY_ITERS, unet-1] = loss
@@ -420,20 +426,20 @@ def train(
                     if is_master:
                         tracker.log(log_data, step=step())
 
-                if is_master and (last_snapshot + save_every_n_samples < sample or (save_immediately and i == 0)):  # This will miss by some amount every time, but it's not a big deal... I hope
-                    # It is difficult to gather this kind of info on the accelerator, so we have to do it on the master
-                    print("Saving snapshot")
-                    last_snapshot = sample
-                    # We need to know where the model should be saved
-                    save_trainer(tracker, trainer, epoch, sample, next_task, validation_losses, samples_seen)
-                    if exists(n_sample_images) and n_sample_images > 0:
-                        trainer.eval()
-                        train_images, train_captions = generate_grid_samples(trainer, train_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Train: ")
-                        tracker.log_images(train_images, captions=train_captions, image_section="Train Samples", step=step())
+                # if is_master and (last_snapshot + save_every_n_samples < sample or (save_immediately and i == 0)):  # This will miss by some amount every time, but it's not a big deal... I hope
+                #     # It is difficult to gather this kind of info on the accelerator, so we have to do it on the master
+                #     print("Saving snapshot")
+                #     last_snapshot = sample
+                #     # We need to know where the model should be saved
+                #     save_trainer(tracker, trainer, epoch, sample, next_task, validation_losses, samples_seen)
+                #     if exists(n_sample_images) and n_sample_images > 0:
+                #         trainer.eval()
+                #         train_images, train_captions = generate_grid_samples(trainer, train_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Train: ")
+                #         tracker.log_images(train_images, captions=train_captions, image_section="Train Samples", step=step())
                 
                 if epoch_samples is not None and sample >= epoch_samples:
                     break
-            next_task = 'val'
+            next_task = 'train'
             sample = 0
 
         all_average_val_losses = None
@@ -517,25 +523,25 @@ def train(
             next_task = 'sample'
             val_sample = 0
 
-        if next_task == 'sample':
-            if is_master:
-                # Generate examples and save the model if we are the master
-                # Generate sample images
-                print(print_ribbon(f"Sampling Set {epoch}", repeat=40))
-                test_images, test_captions = generate_grid_samples(trainer, test_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Test: ")
-                train_images, train_captions = generate_grid_samples(trainer, train_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Train: ")
-                tracker.log_images(test_images, captions=test_captions, image_section="Test Samples", step=step())
-                tracker.log_images(train_images, captions=train_captions, image_section="Train Samples", step=step())
+        # if next_task == 'sample':
+        #     if is_master:
+        #         # Generate examples and save the model if we are the master
+        #         # Generate sample images
+        #         print(print_ribbon(f"Sampling Set {epoch}", repeat=40))
+        #         test_images, test_captions = generate_grid_samples(trainer, test_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Test: ")
+        #         train_images, train_captions = generate_grid_samples(trainer, train_example_data, clip, first_trainable_unet, last_trainable_unet, condition_on_text_encodings, cond_scale, inference_device, "Train: ")
+        #         tracker.log_images(test_images, captions=test_captions, image_section="Test Samples", step=step())
+        #         tracker.log_images(train_images, captions=train_captions, image_section="Train Samples", step=step())
 
-                print(print_ribbon(f"Starting Saving {epoch}", repeat=40))
-                is_best = False
-                if all_average_val_losses is not None:
-                    average_loss = all_average_val_losses.mean(dim=0).sum() / sum(unet_training_mask)
-                    if len(validation_losses) == 0 or average_loss < min(validation_losses):
-                        is_best = True
-                    validation_losses.append(average_loss)
-                save_trainer(tracker, trainer, epoch, sample, next_task, validation_losses, samples_seen, is_best=is_best)
-            next_task = 'train'
+        #         print(print_ribbon(f"Starting Saving {epoch}", repeat=40))
+        #         is_best = False
+        #         if all_average_val_losses is not None:
+        #             average_loss = all_average_val_losses.mean(dim=0).sum() / sum(unet_training_mask)
+        #             if len(validation_losses) == 0 or average_loss < min(validation_losses):
+        #                 is_best = True
+        #             validation_losses.append(average_loss)
+        #         save_trainer(tracker, trainer, epoch, sample, next_task, validation_losses, samples_seen, is_best=is_best)
+        #     next_task = 'train'
 
 def create_tracker(accelerator: Accelerator, config: TrainDecoderConfig, config_path: str, dummy: bool = False) -> Tracker:
     tracker_config = config.tracker
@@ -554,7 +560,7 @@ def create_tracker(accelerator: Accelerator, config: TrainDecoderConfig, config_
 def initialize_training(config: TrainDecoderConfig, config_path):
     # Make sure if we are not loading, distributed models are initialized to the same values
     torch.manual_seed(config.seed)
-
+    
     # Set up accelerator for configurable distributed training
     ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=config.train.find_unused_parameters, static_graph=config.train.static_graph)
     init_kwargs = InitProcessGroupKwargs(timeout=timedelta(seconds=60*60))
@@ -599,8 +605,8 @@ def initialize_training(config: TrainDecoderConfig, config_path):
     get_num_parameters = lambda model, only_training=False: sum(p.numel() for p in model.parameters() if (p.requires_grad or not only_training))
 
     # Create and initialize the tracker if we are the master
+    #pdb.set_trace()
     tracker = create_tracker(accelerator, config, config_path, dummy = rank!=0)
-
     has_img_embeddings = config.data.img_embeddings_url is not None
     has_text_embeddings = config.data.text_embeddings_url is not None
     conditioning_on_text = any([unet.cond_on_text_encodings for unet in config.decoder.unets])

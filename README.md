@@ -66,4 +66,9 @@ Generating a dataset of this typeis a three steps process by following the instr
 ## Training + Fine-tuning
 
 I order to fine-tune DALLE2, we use training code from DALLE2-pytorch to fine-tune the model.
-CD to DALLE2-pytorch directory and follow its instruction to load a pre-trained model from dalle2-laion, and use the dataset generated from the previous step for fine-tuning.
+
+One need to first download the model from https://huggingface.co/laion/DALLE2-PyTorch and put them in model directory.
+
+Then CD to DALLE2-pytorch directory and follow its instruction in README to load a pre-trained model from dalle2-laion. We are using the default traininng configuration from DALLE2-pytorch training config to train our model.
+
+And use the dataset generated from the previous step for fine-tuning.
