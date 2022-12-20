@@ -52,3 +52,13 @@ Interestingly, there is no water in the hedgehog original image, but the AI auto
 
 The inplaint function performs extremely bad from our pre-trained model, i believe it's because of the model's insufficient training.
 
+## Dataloaders
+
+#### Decoder: Image Embedding Dataset
+
+When training the decoder (and up samplers if training together) in isolation, you will need to load images and corresponding image embeddings. This dataset can read two similar types of datasets. First, it can read a [webdataset](https://github.com/webdataset/webdataset) that contains `.jpg` and `.npy` files in the `.tar`s that contain the images and associated image embeddings respectively. Alternatively, you can also specify a source for the embeddings outside of the webdataset. In this case, the path to the embeddings should contain `.npy` files with the same shard numbers as the webdataset and there should be a correspondence between the filename of the `.jpg` and the index of the embedding in the `.npy`. So, for example, `0001.tar` from the webdataset with image `00010509.jpg` (the first 4 digits are the shard number and the last 4 are the index) in it should be paralleled by a `img_emb_0001.npy` which contains a NumPy array with the embedding at index 509.
+
+Generating a dataset of this type: 
+1. Use [img2dataset](https://github.com/rom1504/img2dataset) to generate a webdataset.
+2. Use [clip-retrieval](https://github.com/rom1504/clip-retrieval) to convert the images to embeddings.
+3. Use [embedding-dataset-reordering](https://github.com/Veldrovive/embedding-dataset-reordering) to reorder the embeddings into the expected format.
