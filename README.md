@@ -8,12 +8,15 @@ https://github.com/LAION-AI/dalle2-laion
 
 ![DALL-E 2,  OpenAI's updated text-to-image synthesis neural network](https://user-images.githubusercontent.com/27121819/208495737-702a0eaf-5af5-46e8-9836-e0a0d91ea5eb.png)
 
+The model generates/modifies images based on the input prompts.
+The implementation consists of a CLIP model, a piror, a decoder and an upsampler (the 2nd decoder), the former 3 models are illustrated in the figure above.
+
 
 
 ## Repository Description
 ----------------------------------------------------------------------------
 #### dalle2-laion : this dir contains an implemented inference pipeline and the model pretrained on LAION dataset
-#### web-scraper-south-park-images : this dir download images from internet to form a small dataset we prepared to train on. (Reference : https://github.com/maria-ilie/web-scraper-south-park-images)
+#### data: to be explained(Reference : https://github.com/maria-ilie/web-scraper-south-park-images)
 
 
 ## Example Commands        
