@@ -58,7 +58,12 @@ The inplaint function performs extremely bad from our pre-trained model, i belie
 
 When training the decoder (and up samplers if training together) in isolation, you will need to load images and corresponding image embeddings. This dataset can read two similar types of datasets. First, it can read a [webdataset](https://github.com/webdataset/webdataset) that contains `.jpg` and `.npy` files in the `.tar`s that contain the images and associated image embeddings respectively. Alternatively, you can also specify a source for the embeddings outside of the webdataset. In this case, the path to the embeddings should contain `.npy` files with the same shard numbers as the webdataset and there should be a correspondence between the filename of the `.jpg` and the index of the embedding in the `.npy`. So, for example, `0001.tar` from the webdataset with image `00010509.jpg` (the first 4 digits are the shard number and the last 4 are the index) in it should be paralleled by a `img_emb_0001.npy` which contains a NumPy array with the embedding at index 509.
 
-Generating a dataset of this type: 
+Generating a dataset of this typeis a three steps process by following the instruction below:
 1. Use [img2dataset](https://github.com/rom1504/img2dataset) to generate a webdataset.
 2. Use [clip-retrieval](https://github.com/rom1504/clip-retrieval) to convert the images to embeddings.
 3. Use [embedding-dataset-reordering](https://github.com/Veldrovive/embedding-dataset-reordering) to reorder the embeddings into the expected format.
+
+## Training + Fine-tuning
+
+I order to fine-tune DALLE2, we use training code from DALLE2-pytorch to fine-tune the model.
+CD to DALLE2-pytorch directory and follow its instruction to load a pre-trained model from dalle2-laion, and use the dataset generated from the previous step for fine-tuning.
