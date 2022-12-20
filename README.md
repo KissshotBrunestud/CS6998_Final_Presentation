@@ -8,6 +8,9 @@ https://github.com/LAION-AI/dalle2-laion
 
 ![DALL-E 2,  OpenAI's updated text-to-image synthesis neural network](https://user-images.githubusercontent.com/27121819/208495737-702a0eaf-5af5-46e8-9836-e0a0d91ea5eb.png)
 
+The model generates/modifies images based on the input prompts.
+The implementation consists of a CLIP model, a piror, a decoder and an upsampler (the 2nd decoder), the former 3 models are illustrated in the figure above.
+
 
 
 ## Repository Description
