@@ -1,0 +1,12 @@
+{
+    "count": 100,
+    "successes": 100,
+    "failed_to_download": 0,
+    "failed_to_resize": 0,
+    "duration": 5.029069662094116,
+    "start_time": 1671310863.2075713,
+    "end_time": 1671310868.236641,
+    "status_dict": {
+        "success": 100
+    }
+}

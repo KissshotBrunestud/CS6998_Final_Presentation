@@ -1,0 +1,13 @@
+{
+    "count": 100,
+    "successes": 99,
+    "failed_to_download": 0,
+    "failed_to_resize": 1,
+    "duration": 5.32807993888855,
+    "start_time": 1671310950.1927762,
+    "end_time": 1671310955.5208561,
+    "status_dict": {
+        "success": 99,
+        "Image decoding error": 1
+    }
+}
