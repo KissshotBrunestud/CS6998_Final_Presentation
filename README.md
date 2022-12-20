@@ -14,7 +14,9 @@ https://github.com/LAION-AI/dalle2-laion
 ----------------------------------------------------------------------------
 #### dalle2-laion : this dir contains an implemented inference pipeline and the model pretrained on LAION dataset
 #### web-scraper-south-park-images : this dir download images from internet to form a small dataset we prepared to train on. (Reference : https://github.com/maria-ilie/web-scraper-south-park-images)
-
+#### data : this dir contains unprocess and processed image dataset of more than 2000 images from south-park (Reference URL: https://southpark.fandom.com/wiki/Portal:Characters)
+#### embedding-dataset-reordering : this dir contains the code from embedding-reordering (Reference : https://github.com/Veldrovive/embedding-dataset-reordering)
+#### DALLE2-pytorch : this dir contains training script and configuration tools for fine-tuning the model (Reference : https://github.com/lucidrains/DALLE2-pytorch)
 
 ## Example Commands        
 ----------------------------------------------------------------------------
@@ -23,6 +25,11 @@ cd dalle2-laion \
 python dream_gradio_inference.py \
 python variation_gradio_inference.py \
 python inpaint_gradio_inference.py
+
+### For Training/Fine-tuning: 
+cd DALLE-pytorch \
+python train_decoder.py \
+python train_diffusion_prior.py 
 
 ## Results And Observations  
 ----------------------------------------------------------------------------
